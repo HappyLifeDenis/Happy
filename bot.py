@@ -7,6 +7,7 @@ from telegram.ext import (
 )
 import asyncio
 from aiohttp import web
+import threading
 
 BOT_TOKEN = "7661463654:AAElQ6ZtcH229o-ww26xDcASXh42cIYS02Y"
 MAX_DRIVERS = 10
@@ -160,7 +161,10 @@ async def run_webserver():
     await site.start()
     print("🌐 Webserver running on http://0.0.0.0:8080")
 
-async def main():
+def start_webserver_in_thread():
+    asyncio.run(run_webserver())
+
+async def main_async():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
@@ -181,11 +185,14 @@ async def main():
     application.add_handler(client_conv_handler)
     application.add_handler(CallbackQueryHandler(accept_order, pattern="accept"))
 
-    # Запускаем одновременно веб-сервер и бота
-    await asyncio.gather(
-        run_webserver(),
-        application.run_polling()
-    )
+    # Запускаем бота (блокирующий вызов)
+    application.run_polling()
+
+def main():
+    # Запускаем веб-сервер в отдельном потоке
+    threading.Thread(target=start_webserver_in_thread, daemon=True).start()
+    # Запускаем бота (главный поток)
+    asyncio.run(main_async())
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
