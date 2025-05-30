@@ -12,7 +12,6 @@ import threading
 BOT_TOKEN = "7661463654:AAElQ6ZtcH229o-ww26xDcASXh42cIYS02Y"
 MAX_DRIVERS = 10
 
-# Память в оперативке
 drivers = set()
 pending_order = None
 
@@ -148,7 +147,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Действие отменено.")
     return ConversationHandler.END
 
-# --- HTTP сервер для пинга (чтобы бот не "засыпал" на Replit) ---
+# --- HTTP сервер для пинга ---
 async def handle_ping(request):
     return web.Response(text="I'm alive!")
 
@@ -164,7 +163,10 @@ async def run_webserver():
 def start_webserver_in_thread():
     asyncio.run(run_webserver())
 
-async def main_async():
+def main():
+    # Запускаем веб-сервер в отдельном потоке
+    threading.Thread(target=start_webserver_in_thread, daemon=True).start()
+
     application = ApplicationBuilder().token(BOT_TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
@@ -185,14 +187,8 @@ async def main_async():
     application.add_handler(client_conv_handler)
     application.add_handler(CallbackQueryHandler(accept_order, pattern="accept"))
 
-    # Запускаем бота (блокирующий вызов)
+    # Запускаем бота синхронно
     application.run_polling()
-
-def main():
-    # Запускаем веб-сервер в отдельном потоке
-    threading.Thread(target=start_webserver_in_thread, daemon=True).start()
-    # Запускаем бота (главный поток)
-    asyncio.run(main_async())
 
 if __name__ == "__main__":
     main()
