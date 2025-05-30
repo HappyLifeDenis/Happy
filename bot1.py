@@ -32,8 +32,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("📅 Какого числа вы хотите перевезти мебель?")
         return 1  # ASK_DATE
 
-# Добавляем недостающие обработчики шагов ConversationHandler
-
 async def ask_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["date"] = update.message.text.strip()
     await update.message.reply_text("📦 Что хотите перевезти?")
