@@ -91,12 +91,16 @@ async def ask_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
 
     for drv_id in drivers:
-        msg = await context.bot.send_message(
-            chat_id=drv_id,
-            text=f"📥 Новая заявка:\n{full_order_text}",
-            reply_markup=keyboard
-        )
-        pending_order["message_ids"][drv_id] = msg.message_id
+        try:
+            msg = await context.bot.send_message(
+                chat_id=drv_id,
+                text=f"📥 Новая заявка:\n{full_order_text}",
+                reply_markup=keyboard
+            )
+            pending_order["message_ids"][drv_id] = msg.message_id
+        except Exception:
+            # Если у бота нет доступа к водителю (например, он не в чате), пропускаем
+            pass
 
     await update.message.reply_text("✅ Ждите звонка.", reply_markup=furniture_button())
     return ConversationHandler.END
@@ -173,7 +177,7 @@ def main():
     application.add_handler(CommandHandler("register", register))
 
     client_conv_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(button_handler, pattern="order_furniture")],
+        entry_points=[CallbackQueryHandler(button_handler, pattern="order_furniture", per_message=True)],
         states={
             1: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_date)],
             2: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_goods)],
