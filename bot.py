@@ -10,7 +10,7 @@ from aiohttp import web
 import threading
 
 BOT_TOKEN = "7661463654:AAElQ6ZtcH229o-ww26xDcASXh42cIYS02Y"
-MAX_DRIVERS = 10
+MAX_DRIVERS = 50  # Изменил лимит на 50
 
 drivers = set()
 pending_order = None
@@ -187,7 +187,6 @@ def main():
     application.add_handler(client_conv_handler)
     application.add_handler(CallbackQueryHandler(accept_order, pattern="accept"))
 
-    # Запускаем бота синхронно
     application.run_polling()
 
 if __name__ == "__main__":
